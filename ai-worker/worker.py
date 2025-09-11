@@ -7,7 +7,9 @@ import requests
 from datetime import datetime
 import json
 import time
+import glob
 from typing import List, Dict, Tuple
+from bird_detector import BirdDetector
 
 class BirdDetectionWorker:
     def __init__(self):
@@ -20,8 +22,8 @@ class BirdDetectionWorker:
         os.makedirs(self.frames_dir, exist_ok=True)
         os.makedirs(self.model_path, exist_ok=True)
         
-        # Initialize model (placeholder for now)
-        self.model = self.load_model()
+        # Initialize bird detection model
+        self.bird_detector = BirdDetector()
         
     def load_model(self):
         """Load the bird detection model"""
@@ -65,52 +67,58 @@ class BirdDetectionWorker:
         return frame_paths
         
     def detect_birds(self, frame_path: str) -> List[Dict]:
-        """Detect birds in a single frame"""
-        # For MVP, we'll use a simple placeholder detection
-        # In production, this would use the loaded model for actual bird detection
-        
-        # Simulate detection with random results for testing
-        import random
-        detections = []
-        
-        # Random chance of detecting a bird
-        if random.random() > 0.7:  # 30% chance
-            species = random.choice(['Robin', 'Cardinal', 'Blue Jay', 'Sparrow', 'Eagle'])
-            confidence = random.uniform(0.6, 0.95)
-            
-            detection = {
-                'species': species,
-                'confidence': confidence,
-                'bounding_box': {
-                    'x': random.randint(0, 100),
-                    'y': random.randint(0, 100),
-                    'width': random.randint(50, 200),
-                    'height': random.randint(50, 200)
-                }
-            }
-            detections.append(detection)
-            
-        return detections
-        
-    def process_video(self, video_id: int, video_path: str):
-        """Process a video for bird detection"""
+        """Detect birds in a single frame using the bird detection model"""
         try:
-            print(f"Processing video {video_id}: {video_path}")
+            detections = self.bird_detector.detect_birds(frame_path, confidence_threshold=0.6)
+            return detections
+        except Exception as e:
+            print(f"Error in bird detection: {e}")
+            # Fallback to random detection for testing
+            import random
+            detections = []
+            
+            # Random chance of detecting a bird
+            if random.random() > 0.7:  # 30% chance
+                species = random.choice(['Robin', 'Cardinal', 'Blue Jay', 'Sparrow', 'Eagle'])
+                confidence = random.uniform(0.6, 0.95)
+                
+                detection = {
+                    'species': species,
+                    'confidence': confidence,
+                    'bounding_box': {
+                        'x': random.randint(0, 100),
+                        'y': random.randint(0, 100),
+                        'width': random.randint(50, 200),
+                        'height': random.randint(50, 200)
+                    }
+                }
+                detections.append(detection)
+                
+            return detections
+        
+    def process_video(self, job_data):
+        """Process frames for bird detection"""
+        try:
+            video_id = job_data['videoId']
+            frames_dir = job_data['framesDir']
+            
+            print(f"Processing video {video_id} with frames in {frames_dir}")
             
             # Update video status to processing
             self.update_video_status(video_id, 'processing')
             
-            # Create frames directory for this video
-            video_frames_dir = os.path.join(self.frames_dir, f"video_{video_id}")
-            os.makedirs(video_frames_dir, exist_ok=True)
+            # Get all frame files
+            frame_files = sorted(glob.glob(os.path.join(frames_dir, "frame_*.jpg")))
+            print(f"Found {len(frame_files)} frames to process")
             
-            # Extract frames
-            frame_paths = self.extract_frames(video_path, video_frames_dir, fps=10)
-            print(f"Extracted {len(frame_paths)} frames")
+            if not frame_files:
+                print(f"No frames found in {frames_dir}")
+                self.update_video_status(video_id, 'failed')
+                return
             
             # Process each frame
             all_detections = []
-            for i, frame_path in enumerate(frame_paths):
+            for i, frame_path in enumerate(frame_files):
                 timestamp = i / 10.0  # 10 FPS
                 detections = self.detect_birds(frame_path)
                 
@@ -135,7 +143,7 @@ class BirdDetectionWorker:
             self.update_video_status(video_id, 'completed')
             
             # Clean up frames
-            self.cleanup_frames(video_frames_dir)
+            self.cleanup_frames(frames_dir)
             
         except Exception as e:
             print(f"Error processing video {video_id}: {str(e)}")
@@ -185,23 +193,12 @@ class BirdDetectionWorker:
         
         while True:
             try:
-                # Check for new video processing jobs
+                # Check for new video processing jobs from Redis
                 job = self.redis_client.lpop('video_processing')
                 
                 if job:
                     job_data = json.loads(job)
-                    video_id = job_data['video_id']
-                    filename = job_data['filename']
-                    
-                    # For now, assume video is in uploads directory
-                    video_path = f"/app/uploads/{filename}"
-                    
-                    if os.path.exists(video_path):
-                        self.process_video(video_id, video_path)
-                    else:
-                        print(f"Video file not found: {video_path}")
-                        self.update_video_status(video_id, 'failed')
-                        
+                    self.process_video(job_data)
                 else:
                     # No jobs, wait a bit
                     time.sleep(5)

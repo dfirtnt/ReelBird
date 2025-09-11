@@ -9,13 +9,13 @@ RUN apk add --no-cache ffmpeg
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --verbose
 
-# Copy source code
+# Copy source code (excluding node_modules)
 COPY . .
 
-# Create uploads directory
-RUN mkdir -p uploads
+# Create uploads and frames directories
+RUN mkdir -p uploads frames
 
 EXPOSE 3001
 

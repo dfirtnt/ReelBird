@@ -1,38 +1,14 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const pool = require('../models/database');
-const Bull = require('bull');
 const path = require('path');
 
 const router = express.Router();
 
-// Redis queue for video processing
-const videoQueue = new Bull('video processing', process.env.REDIS_URL || 'redis://localhost:6379');
-
-// Middleware to verify JWT
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET || 'dev_secret', (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: 'Invalid token' });
-    }
-    req.user = user;
-    next();
-  });
-};
-
-// Get user's videos
-router.get('/', authenticateToken, async (req, res) => {
+// Get all videos (for testing - no auth required)
+router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM videos WHERE user_id = $1 ORDER BY created_at DESC',
-      [req.user.userId]
+      'SELECT * FROM videos ORDER BY created_at DESC'
     );
     res.json(result.rows);
   } catch (error) {
@@ -41,12 +17,12 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get specific video
-router.get('/:id', authenticateToken, async (req, res) => {
+// Get specific video (for testing - no auth required)
+router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM videos WHERE id = $1 AND user_id = $2',
-      [req.params.id, req.user.userId]
+      'SELECT * FROM videos WHERE id = $1',
+      [req.params.id]
     );
     
     if (result.rows.length === 0) {
@@ -60,8 +36,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Create video record (called after tusd upload)
-router.post('/', authenticateToken, async (req, res) => {
+// Create video record (for testing - no auth required)
+router.post('/', async (req, res) => {
   try {
     const { filename, duration } = req.body;
     
@@ -71,18 +47,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const result = await pool.query(
       'INSERT INTO videos (user_id, filename, duration, status) VALUES ($1, $2, $3, $4) RETURNING *',
-      [req.user.userId, filename, duration || null, 'uploaded']
+      [1, filename, duration || null, 'uploaded'] // Using user_id = 1 for testing
     );
 
     const video = result.rows[0];
-
-    // Add to processing queue
-    await videoQueue.add('process-video', {
-      videoId: video.id,
-      filename: video.filename,
-      userId: req.user.userId
-    });
-
     res.status(201).json(video);
   } catch (error) {
     console.error('Error creating video:', error);
@@ -90,14 +58,14 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Update video status
-router.patch('/:id/status', authenticateToken, async (req, res) => {
+// Update video status (for testing - no auth required)
+router.patch('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
     
     const result = await pool.query(
-      'UPDATE videos SET status = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
-      [status, req.params.id, req.user.userId]
+      'UPDATE videos SET status = $1 WHERE id = $2 RETURNING *',
+      [status, req.params.id]
     );
     
     if (result.rows.length === 0) {

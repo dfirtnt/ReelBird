@@ -2,17 +2,300 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="ReelBird - AI-powered bird recognition in videos"
-    />
+    <meta name="description" content="ReelBird - AI-powered bird recognition in videos" />
     <title>ReelBird</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      .form-group input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+      }
+      .error {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .success {
+        color: #28a745;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        background-color: white;
+        transition: background-color 0.2s;
+      }
+      .upload-area:hover {
+        background-color: #f8f9fa;
+      }
+      .upload-area.dragover {
+        background-color: #e3f2fd;
+        border-color: #007bff;
+      }
+      .status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      .status.uploaded { background: #ffc107; color: white; }
+      .status.processing { background: #17a2b8; color: white; }
+      .status.completed { background: #28a745; color: white; }
+      .status.failed { background: #dc3545; color: white; }
+    </style>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div class="container">
+      <div class="card">
+        <h1>ReelBird - AI-Powered Bird Recognition</h1>
+        <p>Upload videos to identify birds using AI technology.</p>
+        
+        <div style="margin-bottom: 20px;">
+          <a href="#login" class="btn" onclick="showLogin()">Login</a>
+          <a href="#register" class="btn" onclick="showRegister()">Register</a>
+          <a href="#upload" class="btn" onclick="showUpload()">Upload Video</a>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form" class="card" style="display: none;">
+        <h2>Login</h2>
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required>
+          </div>
+          <button type="submit" class="btn">Login</button>
+        </form>
+        <p style="text-align: center; margin-top: 20px;">
+          Don't have an account? <a href="#register" onclick="showRegister()">Register here</a>
+        </p>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="card" style="display: none;">
+        <h2>Register</h2>
+        <form onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required>
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" required>
+          </div>
+          <div class="form-group">
+            <label for="register-confirm">Confirm Password</label>
+            <input type="password" id="register-confirm" required>
+          </div>
+          <button type="submit" class="btn">Register</button>
+        </form>
+        <p style="text-align: center; margin-top: 20px;">
+          Already have an account? <a href="#login" onclick="showLogin()">Login here</a>
+        </p>
+      </div>
+
+      <!-- Upload Form -->
+      <div id="upload-form" class="card" style="display: none;">
+        <h2>Upload Video</h2>
+        <div class="upload-area" onclick="document.getElementById('video-file').click()">
+          <input type="file" id="video-file" accept="video/*" style="display: none;" onchange="handleFileSelect(event)">
+          <p>Click to select a video file or drag and drop</p>
+          <p style="color: #666; font-size: 14px;">
+            Supported formats: MP4, AVI, MOV, WMV, FLV, WebM
+          </p>
+          <p style="color: #666; font-size: 14px;">
+            Maximum file size: 20MB
+          </p>
+        </div>
+        <div id="upload-progress" style="display: none;">
+          <p>Uploading... <span id="progress-percent">0</span>%</p>
+          <div style="width: 100%; background-color: #e9ecef; border-radius: 4px; margin-top: 10px;">
+            <div id="progress-bar" style="width: 0%; background-color: #007bff; height: 20px; border-radius: 4px; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="card" style="display: none;">
+        <h2>Dashboard</h2>
+        <p>Welcome, <span id="user-email"></span>!</p>
+        <div id="videos-list">
+          <p>No videos uploaded yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentUser = null;
+
+      function showLogin() {
+        hideAllForms();
+        document.getElementById('login-form').style.display = 'block';
+      }
+
+      function showRegister() {
+        hideAllForms();
+        document.getElementById('register-form').style.display = 'block';
+      }
+
+      function showUpload() {
+        hideAllForms();
+        document.getElementById('upload-form').style.display = 'block';
+      }
+
+      function showDashboard() {
+        hideAllForms();
+        document.getElementById('dashboard').style.display = 'block';
+        if (currentUser) {
+          document.getElementById('user-email').textContent = currentUser.email;
+        }
+      }
+
+      function hideAllForms() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('upload-form').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'none';
+      }
+
+      function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        // Simulate login
+        currentUser = { email: email };
+        showDashboard();
+        alert('Login successful! (Demo mode)');
+      }
+
+      function handleRegister(event) {
+        event.preventDefault();
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const confirm = document.getElementById('register-confirm').value;
+        
+        if (password !== confirm) {
+          alert('Passwords do not match');
+          return;
+        }
+        
+        // Simulate registration
+        currentUser = { email: email };
+        showDashboard();
+        alert('Registration successful! (Demo mode)');
+      }
+
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 20 * 1024 * 1024) {
+          alert('File size must be less than 20MB');
+          return;
+        }
+        
+        if (!file.type.startsWith('video/')) {
+          alert('Please select a video file');
+          return;
+        }
+
+        // Simulate upload
+        simulateUpload(file);
+      }
+
+      function simulateUpload(file) {
+        const progressDiv = document.getElementById('upload-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        
+        progressDiv.style.display = 'block';
+        
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += Math.random() * 10;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            setTimeout(() => {
+              alert('Video uploaded successfully! (Demo mode)');
+              progressDiv.style.display = 'none';
+              showDashboard();
+            }, 500);
+          }
+          
+          progressBar.style.width = progress + '%';
+          progressPercent.textContent = Math.round(progress);
+        }, 200);
+      }
+
+      // Initialize
+      showLogin();
+    </script>
   </body>
 </html>

@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # Database
@@ -11,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U reelbird"]
       interval: 10s
@@ -22,7 +21,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -47,12 +46,13 @@ services:
     volumes:
       - ./backend:/app
       - uploads_data:/app/uploads
+      - frames_data:/app/frames
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: npm run dev
+    command: npm start
 
   # AI Processing Worker
   ai-worker:
@@ -88,17 +88,6 @@ services:
       - ./frontend:/app
     command: npm start
 
-  # tusd for resumable uploads
-  tusd:
-    image: tusproject/tusd:latest
-    ports:
-      - "1080:1080"
-    volumes:
-      - uploads_data:/srv/tusd-data
-    environment:
-      - TUSD_DATA_DIR=/srv/tusd-data
-      - TUSD_HTTP_PATH=/files/
-    command: --hooks-http http://api:3001/hooks
 
 volumes:
   postgres_data:
