@@ -32,27 +32,37 @@ For the MVP, video uploads are the primary ingest method. However, videos are of
 ## Method
 
 ### Architecture Overview
-- **Frontend**: React-based web application for user interface
-- **Backend**: Node.js/Express API server
-- **Database**: PostgreSQL for user data and bird detection results
-- **File Storage**: Local filesystem for video files and temporary snapshots
-- **AI Processing**: Python service for bird recognition using pre-trained models
-- **Queue System**: Redis for job queuing and processing coordination
+- **Frontend**: React-based web application (deployable to Vercel/Netlify)
+- **Backend**: Node.js/Express API server (containerized for cloud deployment)
+- **Database**: PostgreSQL (managed service: AWS RDS, Hostinger PostgreSQL, or Replit DB)
+- **File Storage**: Cloud storage (AWS S3, Hostinger storage, or Replit persistent volumes)
+- **AI Processing**: Python service with pre-trained models (containerized, scalable)
+- **Queue System**: Redis (managed service: AWS ElastiCache, Hostinger Redis, or Replit Redis)
+- **Deployment**: Docker containers with cloud-native configuration
 
 ### Data Flow
-1. User uploads video file via chunked upload
-2. Backend stores video file and creates processing job
-3. Video processing service extracts frame snapshots
+1. User uploads video file via chunked upload to cloud storage
+2. Backend creates processing job in queue system
+3. Video processing service extracts frame snapshots to temporary storage
 4. AI service processes snapshots for bird detection
-5. Results stored in database with metadata
-6. User views detection report via web interface
+5. Results stored in managed database with metadata
+6. Temporary files cleaned up automatically
+7. User views detection report via web interface
 
 ### Database Schema
 - **Users**: id, email, password_hash, created_at
-- **Videos**: id, user_id, filename, file_path, duration, status, created_at
+- **Videos**: id, user_id, filename, cloud_storage_url, duration, status, created_at
 - **Detections**: id, video_id, timestamp, species, confidence, bounding_box, created_at
 
 ### Algorithms
 - **Frame Extraction**: FFmpeg-based video processing at configurable intervals
 - **Bird Recognition**: Pre-trained computer vision model (e.g., YOLO, ResNet) specialized for bird species
 - **Confidence Scoring**: Threshold-based filtering for detection quality
+
+### Cloud Deployment Strategy
+- **Development**: Local Docker Compose setup
+- **Staging**: Replit for rapid prototyping and testing
+- **Production**: AWS (ECS/EKS) or Hostinger VPS with managed services
+- **CI/CD**: GitHub Actions for automated deployment
+- **Monitoring**: Cloud-native logging and metrics (CloudWatch, etc.)
+- **Scaling**: Horizontal scaling of AI processing workers based on queue depth
