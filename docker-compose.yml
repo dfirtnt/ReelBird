@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: reelbird
+      POSTGRES_USER: reelbird
+      POSTGRES_PASSWORD: reelbird_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reelbird"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for job queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://reelbird:reelbird_dev@db:5432/reelbird
+      - REDIS_URL=redis://redis:6379
+      - UPLOAD_DIR=/app/uploads
+      - MAX_FILE_SIZE=20971520
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+
+  # AI Processing Worker
+  ai-worker:
+    build:
+      context: ./ai-worker
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://reelbird:reelbird_dev@db:5432/reelbird
+      - FRAMES_DIR=/app/frames
+      - MODEL_PATH=/app/models
+    volumes:
+      - ./ai-worker:/app
+      - frames_data:/app/frames
+      - models_data:/app/models
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: python worker.py
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    volumes:
+      - ./frontend:/app
+    command: npm start
+
+  # tusd for resumable uploads
+  tusd:
+    image: tusproject/tusd:latest
+    ports:
+      - "1080:1080"
+    volumes:
+      - uploads_data:/srv/tusd-data
+    environment:
+      - TUSD_DATA_DIR=/srv/tusd-data
+      - TUSD_HTTP_PATH=/files/
+    command: --hooks-http http://api:3001/hooks
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+  frames_data:
+  models_data:
