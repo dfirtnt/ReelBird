@@ -59,6 +59,16 @@ For the MVP, video uploads are the primary ingest method. However, videos are of
 - **Bird Recognition**: Pre-trained computer vision model (e.g., YOLO, ResNet) specialized for bird species
 - **Confidence Scoring**: Threshold-based filtering for detection quality
 
+### Cloudless MVP Variant
+- **Local Development**: Single machine deployment on macOS
+- **File Upload**: tusd for resumable uploads to local disk or MinIO
+- **Frame Extraction**: FFmpeg at 10 FPS for optimal processing speed
+- **AI Inference**: Local ONNX/PyTorch worker for bird recognition
+- **Database**: SQLite for simplicity or PostgreSQL for cloud parity
+- **Queue System**: Optional Redis for job management
+- **Deployment**: Docker Compose for all services
+- **Target**: MacBook Pro with optional GPU acceleration
+
 ### Cloud Deployment Strategy
 - **Development**: Local Docker Compose setup
 - **Staging**: Replit for rapid prototyping and testing
