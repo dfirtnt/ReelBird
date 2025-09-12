@@ -2,101 +2,63 @@
 
 ## Supported Versions
 
-We actively maintain security for the following versions:
-
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+| 1.x.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
-We take security vulnerabilities seriously. If you discover a security vulnerability in ReelBird, please follow these steps:
+We take security vulnerabilities seriously. If you discover a security vulnerability within ReelBird, please report it responsibly.
 
-### 1. Do NOT disclose publicly
-- Do not open a public issue on GitHub
-- Do not discuss the vulnerability in public forums or chat rooms
-- Do not post about it on social media
+### How to Report
 
-### 2. Report privately
-Please email security concerns to: [security@reelbird.app](mailto:security@reelbird.app)
+1. **Do not** create a public GitHub issue
+2. Email security details to: security@reelbird.com
+3. Include:
+   - Description of the vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fix (if any)
 
-Include the following information:
-- Description of the vulnerability
-- Steps to reproduce the issue
-- Potential impact assessment
-- Any suggested fixes (if known)
+### Response Timeline
 
-### 3. What to expect
-- We will acknowledge receipt within 48 hours
-- We will investigate and respond within 7 days
-- We will work with you to resolve the issue
-- We will credit you in our security advisories (unless you prefer to remain anonymous)
+- **Initial Response**: Within 48 hours
+- **Status Update**: Within 7 days
+- **Resolution**: Within 30 days (depending on complexity)
 
-## Security Best Practices
+### Security Best Practices
 
-### For Users
-- Keep your Docker containers updated
-- Use strong passwords for database access
-- Regularly rotate API keys and secrets
-- Monitor access logs for suspicious activity
-- Use HTTPS in production environments
-
-### For Developers
-- Never commit secrets or API keys to the repository
-- Use environment variables for sensitive configuration
-- Regularly update dependencies for security patches
-- Follow secure coding practices
-- Implement proper input validation and sanitization
+- Keep dependencies updated
+- Use environment variables for sensitive data
+- Enable security headers
+- Regular security audits
+- Input validation and sanitization
 
 ## Security Features
 
-### Authentication & Authorization
-- JWT-based authentication (when enabled)
-- Password hashing with bcrypt
-- Role-based access control
-- Session management
-
-### Data Protection
-- Input validation and sanitization
+- JWT-based authentication
+- Input validation with Joi
+- Helmet.js security headers
+- CORS configuration
 - SQL injection prevention
-- XSS protection headers
-- CSRF protection
-- Secure file upload handling
+- Environment variable protection
 
-### Infrastructure Security
-- Container security best practices
-- Network isolation between services
-- Secure default configurations
-- Regular security updates
+## Dependencies
 
-## Known Security Considerations
+We regularly audit our dependencies for known vulnerabilities:
 
-### File Upload
-- File type validation
-- File size limits (20MB max)
-- Secure file storage
-- Temporary file cleanup
+```bash
+# Backend
+cd backend && npm audit
 
-### AI Model Security
-- Model input validation
-- Secure model storage
-- Processing isolation
-- No persistent storage of uploaded content
+# Frontend  
+cd frontend && npm audit
 
-### Database Security
-- Connection encryption
-- Parameterized queries
-- Access control
-- Regular backups
-
-## Security Updates
-
-We regularly update dependencies and apply security patches. Check our release notes for security-related updates.
+# AI Worker
+cd ai-worker && pip check
+```
 
 ## Contact
 
-For security-related questions or concerns:
-- Email: [security@reelbird.app](mailto:security@reelbird.app)
-- GitHub: Open a private security advisory
-
-Thank you for helping keep ReelBird secure!
+For security-related questions, contact: security@reelbird.com

@@ -41,6 +41,39 @@ const upload = multer({
   storage: storage,
   limits: {
     fileSize: 20 * 1024 * 1024 // 20MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept various video formats including .MOV
+    const allowedMimeTypes = [
+      'video/mp4',
+      'video/avi',
+      'video/quicktime', // MOV files
+      'video/x-msvideo', // AVI files
+      'video/x-flv', // FLV files
+      'video/webm',
+      'video/3gpp',
+      'video/x-ms-wmv', // WMV files
+      'video/x-matroska', // MKV files
+      'video/mpeg',
+      'video/x-m4v', // M4V files
+      'video/ogg'
+    ];
+    
+    const allowedExtensions = [
+      '.mp4', '.avi', '.mov', '.flv', '.webm', 
+      '.3gp', '.wmv', '.mkv', '.mpeg', '.mpg', 
+      '.m4v', '.ogg', '.ogv'
+    ];
+    
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
+      console.log(`Accepting video file: ${file.originalname} (${file.mimetype})`);
+      cb(null, true);
+    } else {
+      console.log(`Rejecting file: ${file.originalname} (${file.mimetype})`);
+      cb(new Error(`Unsupported file format. Allowed: ${allowedExtensions.join(', ')}`), false);
+    }
   }
 });
 
@@ -152,6 +185,9 @@ console.log('Upload route registered');
 // Routes
 app.use('/api/videos', require('./routes/videos'));
 app.use('/api/detections', require('./routes/detections'));
+
+// Serve frame images (admin interface)
+app.use('/api/frames', express.static('/app/frames'));
 
 // Health check
 app.get('/health', (req, res) => {

@@ -1,22 +1,22 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   test:
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine
         env:
-          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: reelbird_test
+          POSTGRES_USER: reelbird
+          POSTGRES_PASSWORD: reelbird_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -24,9 +24,9 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-
+      
       redis:
-        image: redis:7
+        image: redis:7-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -37,68 +37,127 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - uses: actions/setup-node@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
         cache-dependency-path: backend/package-lock.json
-
-    - name: Install dependencies
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+    
+    - name: Install backend dependencies
       run: |
         cd backend
         npm ci
-
-    - name: Install Playwright Browsers
+    
+    - name: Install AI worker dependencies
+      run: |
+        cd ai-worker
+        pip install -r requirements.txt
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test
+      env:
+        DATABASE_URL: postgresql://reelbird:reelbird_test@localhost:5432/reelbird_test
+        REDIS_URL: redis://localhost:6379
+        NODE_ENV: test
+    
+    - name: Install Playwright browsers
       run: |
         cd backend
         npx playwright install --with-deps
-
-    - name: Build Docker containers
-      run: |
-        docker-compose build
-
-    - name: Start services
-      run: |
-        docker-compose up -d
-        # Wait for services to be healthy
-        timeout 60 bash -c 'until docker-compose ps | grep -q "healthy"; do sleep 2; done'
-
-    - name: Run database migrations
-      run: |
-        cd backend
-        npm run migrate
-
-    - name: Run Playwright tests
+    
+    - name: Run E2E tests
       run: |
         cd backend
         npm run test:e2e
-
-    - name: Upload Playwright Report
+      env:
+        DATABASE_URL: postgresql://reelbird:reelbird_test@localhost:5432/reelbird_test
+        REDIS_URL: redis://localhost:6379
+        NODE_ENV: test
+    
+    - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: playwright-report
         path: backend/playwright-report/
         retention-days: 30
-
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: backend/test-results/
-        retention-days: 30
-
+    
     - name: Upload trace files
       uses: actions/upload-artifact@v4
-      if: failure()
+      if: always()
       with:
-        name: playwright-traces
+        name: test-traces
         path: backend/test-results/
         retention-days: 30
 
-    - name: Stop services
-      if: always()
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Run security audit (backend)
       run: |
+        cd backend
+        npm audit --audit-level=moderate
+    
+    - name: Run security audit (frontend)
+      run: |
+        cd frontend
+        npm audit --audit-level=moderate
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker images
+      run: |
+        docker-compose build
+    
+    - name: Test Docker containers
+      run: |
+        docker-compose up -d
+        sleep 30
+        curl -f http://localhost:3001/health || exit 1
+        curl -f http://localhost:3000 || exit 1
         docker-compose down
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: |
+        echo "Deployment would happen here"
+        echo "Configure your deployment target (AWS, GCP, Azure, etc.)"

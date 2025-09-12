@@ -1,8 +1,16 @@
 # Dependencies
 node_modules/
-backend/node_modules/
-frontend/node_modules/
-ai-worker/__pycache__/
+*/node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Environment variables
 .env
@@ -10,13 +18,16 @@ ai-worker/__pycache__/
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
 
 # Logs
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+.pnpm-debug.log*
 
 # Runtime data
 pids
@@ -31,14 +42,32 @@ coverage/
 # nyc test coverage
 .nyc_output
 
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
 # Dependency directories
 jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
 
 # Optional eslint cache
 .eslintcache
+
+# Optional stylelint cache
+.stylelintcache
 
 # Microbundle cache
 .rpt2_cache/
@@ -61,6 +90,7 @@ jspm_packages/
 
 # Next.js build output
 .next
+out
 
 # Nuxt.js build / generate output
 .nuxt
@@ -70,15 +100,32 @@ dist
 .cache/
 public
 
-# Storybook build outputs
-.out
-.storybook-out
+# Vuepress build output
+.vuepress/dist
 
-# Temporary folders
-tmp/
-temp/
+# Serverless directories
+.serverless/
 
-# Editor directories and files
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# IDEs and editors
 .vscode/
 .idea/
 *.swp
@@ -97,67 +144,35 @@ Thumbs.db
 # Docker
 .dockerignore
 
-# Test results
-test-results/
-playwright-report/
-coverage/
-
-# Uploads and frames (contain user data)
-uploads/
-frames/
-backend/uploads/
-backend/frames/
-ai-worker/uploads/
-ai-worker/frames/
-
-# Model files (large binary files)
-*.pth
-*.pt
-*.h5
-*.pb
-*.onnx
-models/
-
 # Database
 *.db
 *.sqlite
 *.sqlite3
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+# Uploads and temporary files
+uploads/
+frames/
+models/
+temp/
+tmp/
+
+# Test results
+test-results/
+playwright-report/
+coverage/
+
+# Build outputs
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
-# Virtual environments
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
+# AI/ML specific
+*.pth
+*.pt
+*.h5
+*.pkl
+*.joblib
+checkpoints/
+weights/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -171,7 +186,7 @@ Pipfile.lock
 # PEP 582
 __pypackages__/
 
-# Celery
+# Celery stuff
 celerybeat-schedule
 celerybeat.pid
 
@@ -195,3 +210,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ReelBird specific
+bird_frame_*.jpg
+*.mov
+*.mp4
+*.avi
+*.wmv
+*.flv
+*.webm

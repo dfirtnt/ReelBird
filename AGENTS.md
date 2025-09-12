@@ -37,6 +37,17 @@
 - **Documentation**: Create in Markdown (.md) files when requested
 - **Testing**: Use Docker containers for all testing and validation, Playwright for browser testing
 
+
+## DigDug-BrowserDebugger Integration
+- **Autonomous Browser Debugging**: Use DigDug-BrowserDebugger for real-time error capture and analysis
+- **Documentation**: See `/Users/starlord/DigDug-BrowserDebugger/DEBUGBROWSER-AGENT.md` for complete integration guide
+- **When to Use**: Browser console errors, network failures, UI issues, extension problems, real-time debugging
+- **Server Status**: Check `http://localhost:3005/api/health` before testing
+- **Session Monitoring**: Use `curl -s http://localhost:3005/api/sessions` to track active sessions
+- **Error Analysis**: Get AI-powered diagnostics with `curl -s http://localhost:3005/api/analysis/{sessionId}`
+- **Integration**: Works with Playwright, Jest, and other testing frameworks
+- **Benefits**: Eliminates manual browser testing, provides comprehensive logging, real-time monitoring
+
 ## Browser Testing with Playwright
 - **Autonomous End-to-End Testing**: Set up Playwright for automated browser testing with closed-loop debugging
 - **Installation Requirements**:

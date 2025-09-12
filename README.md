@@ -1,6 +1,10 @@
 # ReelBird - AI-Powered Bird Detection in Videos
 
-ReelBird is an intelligent video analysis system that automatically detects and identifies birds in user-uploaded videos using a two-stage AI pipeline.
+[![CI/CD](https://github.com/your-username/ReelBird/workflows/CI/badge.svg)](https://github.com/your-username/ReelBird/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+
+ReelBird is an intelligent video analysis system that automatically detects and identifies birds in user-uploaded videos using a two-stage AI pipeline. Built with modern web technologies and containerized for easy deployment.
 
 ## 🎯 Features
 
@@ -9,6 +13,9 @@ ReelBird is an intelligent video analysis system that automatically detects and 
 - **Real-time Processing**: Redis-based queue system for scalable processing
 - **Comprehensive Testing**: Playwright E2E testing with closed-loop debugging
 - **Docker Deployment**: Containerized services for easy deployment
+- **User Authentication**: Secure user registration and login system
+- **Video Management**: Upload, process, and view bird detection results
+- **Responsive UI**: Modern React-based web interface
 
 ## 🏗️ Architecture
 
@@ -21,7 +28,7 @@ ReelBird is an intelligent video analysis system that automatically detects and 
 
 ### AI Pipeline
 1. **Stage 1**: Binary classification (Bird Present vs No Bird) using EfficientNet-B0
-2. **Stage 2**: Species identification (48 bird species) using EfficientNet-B3
+2. **Stage 2**: Species identification (31 bird species) using EfficientNet-B3
 
 ## 🚀 Quick Start
 
@@ -60,6 +67,11 @@ ReelBird is an intelligent video analysis system that automatically detects and 
    - Health check: http://localhost:3001/health
 
 ## 📊 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
 
 ### Video Management
 - `POST /api/upload` - Upload video file
@@ -156,6 +168,27 @@ ReelBird/
 └── .github/workflows/      # CI/CD pipelines
 ```
 
+## 🔒 Security
+
+- Environment variables for sensitive configuration
+- JWT-based authentication
+- Input validation with Joi
+- Helmet.js for security headers
+- CORS configuration
+- SQL injection prevention with parameterized queries
+
+## 🚀 Deployment
+
+### Production Deployment
+1. Set up production environment variables
+2. Configure cloud storage (AWS S3, etc.)
+3. Set up managed database and Redis
+4. Deploy with Docker Compose or Kubernetes
+5. Configure monitoring and logging
+
+### Environment Variables
+See `.env.example` for all required configuration options.
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -169,6 +202,7 @@ ReelBird/
 - Add tests for new features
 - Update documentation as needed
 - Ensure all tests pass before submitting
+- Use conventional commit messages
 
 ## 📄 License
 
@@ -180,6 +214,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **PyTorch**: Facebook AI Research for the deep learning framework
 - **Playwright**: Microsoft for the excellent testing framework
 - **Docker**: For containerization and deployment
+- **React**: For the modern frontend framework
+- **Express**: For the robust backend framework
 
 ## 📞 Support
 
@@ -187,6 +223,10 @@ For questions, issues, or contributions:
 - Open an issue on GitHub
 - Check the documentation in `/docs`
 - Review the test examples in `/backend/tests`
+
+## 🔄 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
 
 ---
 

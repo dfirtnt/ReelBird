@@ -3,6 +3,34 @@ const pool = require('../models/database');
 
 const router = express.Router();
 
+// Get all detections (admin endpoint)
+router.get('/', async (req, res) => {
+  try {
+    const { video_id } = req.query;
+    
+    let query = `
+      SELECT d.*, v.filename as video_filename 
+      FROM detections d 
+      JOIN videos v ON d.video_id = v.id 
+      WHERE v.user_id = $1 
+    `;
+    let params = [1];
+    
+    if (video_id) {
+      query += ' AND d.video_id = $2';
+      params.push(video_id);
+    }
+    
+    query += ' ORDER BY d.created_at DESC';
+    
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching detections:', error);
+    res.status(500).json({ error: 'Failed to fetch detections' });
+  }
+});
+
 // Get detections for a video (for testing - no auth required)
 router.get('/video/:videoId', async (req, res) => {
   try {

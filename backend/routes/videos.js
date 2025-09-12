@@ -79,4 +79,26 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
+// Delete a video (admin endpoint)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Delete associated detections first (foreign key constraint)
+    await pool.query('DELETE FROM detections WHERE video_id = $1', [id]);
+    
+    // Delete the video
+    const result = await pool.query('DELETE FROM videos WHERE id = $1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    
+    res.json({ message: 'Video deleted successfully', video: result.rows[0] });
+  } catch (error) {
+    console.error('Error deleting video:', error);
+    res.status(500).json({ error: 'Failed to delete video' });
+  }
+});
+
 module.exports = router;
