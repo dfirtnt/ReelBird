@@ -6,11 +6,11 @@ services:
     environment:
       POSTGRES_DB: reelbird
       POSTGRES_USER: reelbird
-      POSTGRES_PASSWORD: reelbird_dev
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U reelbird"]
       interval: 10s
@@ -21,7 +21,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6380:6379"
+      - "127.0.0.1:6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -39,7 +39,7 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://reelbird:reelbird_dev@db:5432/reelbird
+      - DATABASE_URL=postgresql://reelbird:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/reelbird
       - REDIS_URL=redis://redis:6379
       - UPLOAD_DIR=/app/uploads
       - MAX_FILE_SIZE=20971520
@@ -61,7 +61,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql://reelbird:reelbird_dev@db:5432/reelbird
+      - DATABASE_URL=postgresql://reelbird:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/reelbird
       - FRAMES_DIR=/app/frames
       - MODEL_PATH=/app/models
     volumes:

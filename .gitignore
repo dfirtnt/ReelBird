@@ -225,3 +225,7 @@ bird_frame_*.jpg
 *.wmv
 *.flv
 *.webm
+# Local environment variants
+.env.*
+!.env.example
+!.env.*.example
