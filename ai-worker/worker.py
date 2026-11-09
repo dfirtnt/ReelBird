@@ -14,7 +14,7 @@ from bird_detector import BirdDetector
 class BirdDetectionWorker:
     def __init__(self):
         self.redis_client = redis.Redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379'))
-        self.db_connection = psycopg2.connect(os.getenv('DATABASE_URL', 'postgresql://reelbird:reelbird_dev@localhost:5432/reelbird'))
+        self.db_connection = psycopg2.connect(os.environ['DATABASE_URL'])
         self.frames_dir = os.getenv('FRAMES_DIR', '/app/frames')
         self.model_path = os.getenv('MODEL_PATH', '/app/models')
         
