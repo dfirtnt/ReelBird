@@ -51,6 +51,12 @@ ReelBird is an intelligent video analysis system that automatically detects and 
    # Edit .env with your configuration
    ```
 
+   Set `POSTGRES_PASSWORD` in `.env` before starting Compose. Use a URL-safe
+   password. For an existing database volume, keep its current password; editing
+   `.env` does not rotate it. For processes outside Compose, also set
+   `DATABASE_URL` with a URL-encoded password. Database and Redis host ports
+   are available only on `127.0.0.1`.
+
 3. **Start services**
    ```bash
    docker-compose up -d
